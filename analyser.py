@@ -1,7 +1,11 @@
+# -*- coding:utf-8 -*-
+
+
 # utilities
 import re
 import numpy as np
 import pandas as pd
+from collections import Counter
 # plotting
 import seaborn as sns
 from wordcloud import WordCloud
@@ -17,24 +21,25 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import confusion_matrix, classification_report
 
 
-# Importing the dataset
-DATASET_ENCODING = "ISO-8859-1"
-DATASET_COLUMNS = ['id', 'created_at', 'tweet']
-df = pd.read_csv('./tmp/clean_and_sorted_tweets.csv', encoding=DATASET_ENCODING, usecols=DATASET_COLUMNS)
-df.sample(5)
-print(df.columns)
-print('length of data is', len(df))
-print(df.shape)
-print(df.info)
-print(df.dtypes)
-print('null =>' + str(np.sum(df.isnull().any(axis=1))))
-print('Count of columns in the data is:  ', len(df.columns))
-print('Count of rows in the data is:  ', len(df))
-print(df['tweet'].nunique())
+# Importing the document term matrix
+data = pd.read_pickle('./data/tweet_dtm.pkl')
+data = data.transpose()
+print(data.head())
 
-# Plotting the distribution for dataset.
-ax = df.groupby('id').count().plot(kind='bar', title='Distribution of data',legend=False)
-ax.set_xticklabels(['Negative','Positive'], rotation=0)
-# Storing data in lists.
-text, sentiment = list(df['tweet']), list(df['id'])
-plt.show()
+# Find the top 15 words for each tweet
+top_dict = {}
+for c in data.columns:
+    top = data[c].sort_values(ascending=False).head(15)
+    top_dict[c]= list(zip(top.index, top.values))
+
+top_dict
+
+words = []
+# get all words said by fahrettinkoca
+for tweet in data.columns:
+    top = [word for (word, count) in top_dict[tweet]]
+    for t in top:
+        words.append(t)
+
+top_words = Counter(words).most_common()
+print(top_words)
